@@ -85,22 +85,6 @@ class Blockchain(object):
     def last_block(self):
         return self.chain[-1]
 
-    def proof_of_work(self, block):
-        """
-        Simple Proof of Work Algorithm
-        Stringify the block and look for a proof.
-        Loop through possibilities, checking each one against `valid_proof`
-        in an effort to find a number that is a valid proof
-        :return: A valid proof for the provided block
-        """
-        # TODO
-        block_string = json.dumps(block, sort_keys=True)
-        proof = 0
-        while self.valid_proof(block_string, proof) is False:
-            proof += 1
-
-        return proof
-
     @staticmethod
     def valid_proof(block_string, proof):
         """
@@ -117,7 +101,7 @@ class Blockchain(object):
         guess = f'{block_string}{proof}'.encode()
         guess_hash = hashlib.sha256(guess).hexdigest()
 
-        return guess_hash[:3] == '000'
+        return guess_hash[:6] == '000000'
 
 
 # Instantiate our Node
@@ -128,24 +112,27 @@ node_identifier = str(uuid4()).replace('-', '')
 
 # Instantiate the Blockchain
 blockchain = Blockchain()
-print(blockchain.chain)
-print(blockchain.hash(blockchain.last_block))
 
 
-@app.route('/mine', methods=['GET'])
+@app.route('/mine', methods=['POST'])
 def mine():
-    # Run the proof of work algorithm to get the next proof
-    proof = blockchain.proof_of_work(blockchain.last_block)
+    # modify to receive and validate or reject a nre proof sent by client
+    data = request.get_json()
 
-    # Forge the new Block by adding it to the chain with the proof
-    previous_hash = blockchain.hash(blockchain.last_block)
-    new_block = blockchain.new_block(proof, previous_hash)
-    response = {
-        # TODO: Send a JSON response with the new block
-        "block": new_block
-    }
+    # check that all fields are in the post data
+    required = ['proof', 'id']
 
-    return jsonify(response), 200
+    # if not all values in data are in required return missing values
+    if not all(k in data for k in required):
+        response = {
+            "message": "missing values"
+        }
+        return jsonify(response), 400
+    else:
+        response = {
+            'message': "sucessing validating proof"
+        }
+        return jsonify(response), 201
 
 
 @app.route('/chain', methods=['GET'])
@@ -153,6 +140,18 @@ def full_chain():
     response = {
         # TODO: Return the chain and its current length
     }
+    return jsonify(response), 200
+
+
+@app.route('/last_block', methods=['GET'])
+def last_block():
+    # get last block function
+    end_block = blockchain.last_block()
+
+    response = {
+        "last_block": end_block
+    }
+
     return jsonify(response), 200
 
 
