@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { client } from "../utils/dy_axios";
+import { Form, Button } from "semantic-ui-react";
 
 // importing scss
 import "../app.scss";
@@ -26,7 +27,13 @@ const Profile = () => {
 	return (
 		<div className="profile">
 			<h3>Profile Border</h3>
-			<p>ID: {}</p>
+			<Form>
+				<Form.Field>
+					<label>ID: </label>
+					<input placeholder="Id..." />
+				</Form.Field>
+				<Button type="submit">Submit</Button>
+			</Form>
 		</div>
 	);
 };
