@@ -81,11 +81,3 @@ if __name__ == '__main__':
         # TODO: If the server responds with a 'message' 'New Block Forged'
         # add 1 to the number of coins mined and print it.  Otherwise,
         # print the message from the server.
-
-        respose = requests.get(f'{node}/mine')
-
-        if data.message == "New Block Forged":
-            coins += 1
-            print(f'you have: {coins}(s)')
-        else:
-            print(data.message)

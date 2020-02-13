@@ -126,11 +126,10 @@ def mine():
     last_block = blockchain.last_block
     last_block_string = json.dumps(last_block, sort_keys=True)
 
-    if blockchain.valid_proof(last_block):
+    if blockchain.valid_proof(last_block_string, proof):
         # Forge the new Block by adding it to the chain with the proof
         previous_hash = blockchain.hash(blockchain.last_block)
-
-        block_index = blockchain.new_transaction(0, data['id'], 1)
+        new_block = blockchain.new_block(proof, previous_hash)
 
         response = {
             # TODO: Send a JSON response with the new block
@@ -139,7 +138,7 @@ def mine():
         return jsonify(response), 200
     else:
         response = {
-            'message': 'missing values'
+            'message': 'Bad proof'
         }
         return jsonify(response), 200
 

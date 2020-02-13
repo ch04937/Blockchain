@@ -1,7 +1,3 @@
-# Paste your version of blockchain.py from the client_mining_p
-# folder here
-# Paste your version of blockchain.py from the basic_block_gp
-# folder here
 import hashlib
 import json
 from time import time
@@ -62,6 +58,7 @@ class Blockchain(object):
             'recipient': recipient,
             'amount': amount
 
+
         }
         self.current_transactions.append(transaction)
 
@@ -116,7 +113,6 @@ class Blockchain(object):
         correct number of leading zeroes.
         :return: True if the resulting hash is a valid proof, False otherwise
         """
-        # TODO
         guess = f'{block_string}{proof}'.encode()
         guess_hash = hashlib.sha256(guess).hexdigest()
 
@@ -133,10 +129,36 @@ node_identifier = str(uuid4()).replace('-', '')
 blockchain = Blockchain()
 
 
+@app.route('/transaction/new', methods=['POST'])
+def receive_new_transaction():
+    '''
+    * use `request.get_json()` to pull the data out of the POST
+    * check that 'sender', 'recipient', and 'amount' are present
+        * return a 400 error using `jsonify(response)` with a 'message'
+    * upon success, return a 'message' indicating index of the block
+      containing the transaction
+
+    '''
+    data = request.get_json()
+
+    required = ['sender', 'recipient', 'amount']
+
+    if not all(k in data for k in required):
+        # TODO: Better error hadling
+        return "missing values", 400
+
+    index = blockchain.new_transaction(
+        data['sender'], data['recipient'], data['amount'])
+
+    response = {
+        'message': f'transactions willbe included in the block {index}'
+    }
+
+    return jsonify(response), 200
+
+
 @app.route('/mine', methods=['POST'])
 def mine():
-
-    # modify to receive and validate or reject a nre proof sent by client
     data = request.get_json()
 
     # Run the proof of work algorithm to get the next proof
@@ -145,21 +167,26 @@ def mine():
     last_block = blockchain.last_block
     last_block_string = json.dumps(last_block, sort_keys=True)
 
-    if blockchain.valid_proof(last_block):
+    if blockchain.valid_proof(last_block_string, proof):
         # Forge the new Block by adding it to the chain with the proof
         previous_hash = blockchain.hash(blockchain.last_block)
 
         block_index = blockchain.new_transaction(0, data['id'], 1)
 
+        new_block = blockchain.new_block(proof, previous_hash)
+
         response = {
             # TODO: Send a JSON response with the new block
-            "block": new_block
+            "block": new_block,
+            'reward': f'Reward paid in block {block_index}'
         }
+
         return jsonify(response), 200
     else:
         response = {
-            'message': 'missing values'
+            'message': 'Bad proof'
         }
+
         return jsonify(response), 200
 
 
@@ -167,21 +194,18 @@ def mine():
 def full_chain():
     response = {
         # TODO: Return the chain and its current length
+        'chain': blockchain.chain,
+        'length': len(blockchain.chain)
     }
     return jsonify(response), 200
 
 
 @app.route('/last_block', methods=['GET'])
 def last_block():
-    # get last block function
-    end_block = blockchain.last_block
-
     response = {
-        'last_block': end_block
+        'last_block': blockchain.last_block
     }
-
     return jsonify(response), 200
-
 
 # Run the program on port 5000
 if __name__ == '__main__':
