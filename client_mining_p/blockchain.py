@@ -119,25 +119,29 @@ def mine():
 
     # modify to receive and validate or reject a nre proof sent by client
     data = request.get_json()
+
+    # Run the proof of work algorithm to get the next proof
+    proof = data['proof']
+
     last_block = blockchain.last_block
     last_block_string = json.dumps(last_block, sort_keys=True)
 
-    # check that all fields are in the post data
-    required = ['proof', 'id']
+    if blockchain.valid_proof(last_block):
+        # Forge the new Block by adding it to the chain with the proof
+        previous_hash = blockchain.hash(blockchain.last_block)
 
-    # # if not all values in data are in required return missing values
-    # if not all(k in data for k in required):
-    #     response = {
-    #         "message": "missing values"
-    #     }
-    #     return jsonify(response), 400
-    # else:
-    #     response = {
-    #         'message': "New Block Forged"
-    #     }
-    #     return jsonify(response), 201
-    response = {
-        'message':}
+        block_index = blockchain.new_transaction(0, data['id'], 1)
+
+        response = {
+            # TODO: Send a JSON response with the new block
+            "block": new_block
+        }
+        return jsonify(response), 200
+    else:
+        response = {
+            'message': 'missing values'
+        }
+        return jsonify(response), 200
 
 
 @app.route('/chain', methods=['GET'])
