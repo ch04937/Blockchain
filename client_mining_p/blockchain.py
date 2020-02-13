@@ -101,7 +101,7 @@ class Blockchain(object):
         guess = f'{block_string}{proof}'.encode()
         guess_hash = hashlib.sha256(guess).hexdigest()
 
-        return guess_hash[:6] == '000000'
+        return guess_hash[:3] == '000'
 
 
 # Instantiate our Node
@@ -116,23 +116,28 @@ blockchain = Blockchain()
 
 @app.route('/mine', methods=['POST'])
 def mine():
+
     # modify to receive and validate or reject a nre proof sent by client
     data = request.get_json()
+    last_block = blockchain.last_block
+    last_block_string = json.dumps(last_block, sort_keys=True)
 
     # check that all fields are in the post data
     required = ['proof', 'id']
 
-    # if not all values in data are in required return missing values
-    if not all(k in data for k in required):
-        response = {
-            "message": "missing values"
-        }
-        return jsonify(response), 400
-    else:
-        response = {
-            'message': "sucessing validating proof"
-        }
-        return jsonify(response), 201
+    # # if not all values in data are in required return missing values
+    # if not all(k in data for k in required):
+    #     response = {
+    #         "message": "missing values"
+    #     }
+    #     return jsonify(response), 400
+    # else:
+    #     response = {
+    #         'message': "New Block Forged"
+    #     }
+    #     return jsonify(response), 201
+    response = {
+        'message':}
 
 
 @app.route('/chain', methods=['GET'])
@@ -146,10 +151,10 @@ def full_chain():
 @app.route('/last_block', methods=['GET'])
 def last_block():
     # get last block function
-    end_block = blockchain.last_block()
+    end_block = blockchain.last_block
 
     response = {
-        "last_block": end_block
+        'last_block': end_block
     }
 
     return jsonify(response), 200
